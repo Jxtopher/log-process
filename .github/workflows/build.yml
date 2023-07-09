@@ -1,0 +1,75 @@
+name: GCC and CLang
+
+on:
+  push:
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - 'CMakeLists.txt'
+      - '.github/workflows/**'
+      
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: gcc:13.1.0
+
+    strategy:
+      matrix:
+        CXX: [/usr/local/bin/g++, /usr/bin/clang++-14]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set env RELEASE_VERSION
+      run: |
+        echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        echo "NPROC=$(nproc --all)" >> $GITHUB_ENV
+
+    - name: Install package
+      run: apt-get update && apt-get -y install cmake valgrind libgtest-dev cppcheck clang-tidy libboost-program-options-dev gcovr
+
+    - name: Add repository to git safe directories
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DRELEASE_VERSION="${{ env.RELEASE_VERSION }}" -DCMAKE_CXX_COMPILER:FILEPATH=${{ matrix.CXX }}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    
+    - name: Check 1 -> cppcheck
+      run: cmake --build ${{github.workspace}}/build --target cppcheck
+
+    # - name: Check 2 -> clang-tidy
+    #   run: clang-tidy-14 apps/* -- -I include/ -I build/generated/
+
+    - name: Test
+      run: ctest --test-dir ${{github.workspace}}/build -C ${{env.BUILD_TYPE}}
+      
+    - name: Coverage
+      run: gcovr -r ../ .
+
+    - name: Memcheck
+      run: cd ${{github.workspace}}/build && ctest -E ".py" --overwrite MemoryCheckCommandOptions="--leak-check=full --error-exitcode=100" -T memcheck
+
+    - name: Create tarball
+      if: startsWith(github.event.ref, 'refs/tags/') &&  matrix.CXX == '/usr/local/bin/g++'
+      run: |
+        cd ${{github.workspace}}/build 
+        tar czf /tmp/lp.tar.gz lp
+
+    - name: Publish the release
+      if: startsWith(github.event.ref, 'refs/tags/') &&  matrix.CXX == '/usr/local/bin/g++'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: /tmp/lp.tar.gz
