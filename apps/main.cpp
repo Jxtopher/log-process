@@ -59,24 +59,12 @@ Args args_parser(int argc, char** argv) {
 
     boost::program_options::variables_map vm;
     boost::program_options::options_description parser(
-        "**" + std::string(NAME_SOFTWARE) + "**" +
-        " optio"
-        "ns");
+        "**" + std::string(NAME_SOFTWARE) + "**" + " options");
     parser.add_options()("help,h", "help message")("version,v", "version")(
-        "flow,f",
-        "continuously "
-        "displays new "
-        "processes")("color,c",
-                     "continuously "
-                     "displays new "
-                     "processes")(
+        "flow,f", "continuously displays new processes")(
+        "color,c", "continuously displays new processes")(
         "seconde,s", boost::program_options::value<double>(&ret_args.seconde),
-        "waiting time "
-        "between two "
-        "analysis of "
-        "the running "
-        "processes "
-        "(default : "
+        "waiting time between two analysis of the running processes (default : "
         "\"0.01s\")");
     try {
         boost::program_options::store(
@@ -85,11 +73,7 @@ Args args_parser(int argc, char** argv) {
     } catch (const boost::program_options::error& ex) {
         throw std::runtime_error(std::string{} + __FILE__ + ":" +
                                  std::to_string(__LINE__) +
-                                 " [-] "
-                                 "error "
-                                 "program_"
-                                 "options " +
-                                 ex.what());
+                                 " [-] error program_options " + ex.what());
     }
 
     if (vm.count("flow")) {
@@ -100,8 +84,7 @@ Args args_parser(int argc, char** argv) {
         ret_args.color = true;
     }
 
-    if (vm.count("versio"
-                 "n")) {
+    if (vm.count("version")) {
         version(NAME_SOFTWARE);
         exit(EXIT_SUCCESS);
     }
@@ -168,21 +151,8 @@ void show_new_process(const std::set<uint64_t>& new_pids, const bool color) {
         get_cmdline(pid, cmdline);
         const auto now = std::chrono::system_clock::now();
         const std::time_t t_c = std::chrono::system_clock::to_time_t(now);
-        char
-            timeString[std::size("yy"
-                                 "yy"
-                                 "-m"
-                                 "m-"
-                                 "dd"
-                                 "Th"
-                                 "h:"
-                                 "mm"
-                                 ":s"
-                                 "s"
-                                 "Z")];
-        std::strftime(std::data(timeString), std::size(timeString),
-                      "%FT%"
-                      "TZ",
+        char timeString[std::size("yyyy-mm-ddThh:mm:ssZ")];
+        std::strftime(std::data(timeString), std::size(timeString), "%FT%TZ",
                       std::gmtime(&t_c));
         if (color) {
             std::cout << TERM_COLOR_YELLOW << timeString << TERM_COLOR_NO_COLOR

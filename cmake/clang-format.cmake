@@ -10,7 +10,7 @@ set(CLANG_FORMAT_TO_APPLY "apps/*.cpp"
                           "test/unit/*.h" 
                           "test/unit/*.hpp") 
 
-FIND_PROGRAM(CLANGFORMAT_EXECUTABLE clang-format-11)
+FIND_PROGRAM(CLANGFORMAT_EXECUTABLE clang-format-14)
 
 file(GLOB_RECURSE ALL_SOURCE_FILES  ${CLANG_FORMAT_TO_APPLY})
 foreach (SOURCE_FILE ${ALL_SOURCE_FILES})

@@ -10,6 +10,7 @@ RUN apt-get update -y && \
     libgtest-dev \
     cppcheck \
     clang-tidy \
+    clang-format \
     libboost-program-options-dev \
     ccache \
     gcovr \

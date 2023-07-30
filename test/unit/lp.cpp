@@ -1,5 +1,3 @@
 #include "test.h"
 
-TEST(LP_test, isEmpty) {
-
-}
+TEST(LP_test, isEmpty) {}
