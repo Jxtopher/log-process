@@ -44,6 +44,7 @@ struct Args {
     double seconde = 0.01;
 };
 
+std::string getTimestamp();
 void show_new_process(const std::set<uint64_t>& new_pids, const bool color);
 void update_new_pids(const std::set<uint64_t>& old_pids,
                      const std::set<uint64_t>& curr_pids,
@@ -145,21 +146,31 @@ void update_new_pids(const std::set<uint64_t>& old_pids,
     }
 };
 
+std::string getTimestamp() {
+    const auto now = std::chrono::system_clock::now();
+    const auto nowAsTimeT = std::chrono::system_clock::to_time_t(now);
+    const auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                           now.time_since_epoch()) %
+                       1000;
+    std::stringstream nowSs;
+    nowSs << std::put_time(std::localtime(&nowAsTimeT), "%F %T") << '.'
+          << std::setfill('0') << std::setw(3) << nowMs.count();
+    return nowSs.str();
+}
+
 void show_new_process(const std::set<uint64_t>& new_pids, const bool color) {
     for (const auto& pid : new_pids) {
+        // cmdline
         std::string cmdline;
         get_cmdline(pid, cmdline);
-        const auto now = std::chrono::system_clock::now();
-        const std::time_t t_c = std::chrono::system_clock::to_time_t(now);
-        char timeString[std::size("yyyy-mm-ddThh:mm:ssZ")];
-        std::strftime(std::data(timeString), std::size(timeString), "%FT%TZ",
-                      std::gmtime(&t_c));
+
         if (color) {
-            std::cout << TERM_COLOR_YELLOW << timeString << TERM_COLOR_NO_COLOR
-                      << " " << TERM_COLOR_LIGHT_BLUE << pid
-                      << TERM_COLOR_NO_COLOR << " " << cmdline << std::endl;
+            std::cout << TERM_COLOR_YELLOW << getTimestamp()
+                      << TERM_COLOR_NO_COLOR << " " << TERM_COLOR_LIGHT_BLUE
+                      << pid << TERM_COLOR_NO_COLOR << " " << cmdline
+                      << std::endl;
         } else {
-            std::cout << timeString << " " << pid << " " << cmdline
+            std::cout << getTimestamp() << " " << pid << " " << cmdline
                       << std::endl;
         }
     }
