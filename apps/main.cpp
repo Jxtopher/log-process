@@ -66,7 +66,7 @@ Args args_parser(int argc, char** argv) {
         "color,c", "continuously displays new processes")(
         "seconde,s", boost::program_options::value<double>(&ret_args.seconde),
         "waiting time between two analysis of the running processes (default : "
-        "\"0.01s\")");
+        "\"0.01\")");
     try {
         boost::program_options::store(
             boost::program_options::parse_command_line(argc, argv, parser), vm);
