@@ -1,4 +1,4 @@
-name: GCC and CLang
+name: CI-unix
 
 on:
   push:
@@ -17,18 +17,19 @@ on:
       - '**.h'
 env:
   BUILD_TYPE: Release
+  BUILD_FOLDER: build
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: gcc:13.1.0
+    container: gcc:13.2.0
 
     strategy:
       matrix:
         CXX: [/usr/local/bin/g++, /usr/bin/clang++-14]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set env RELEASE_VERSION
       run: |
@@ -42,34 +43,39 @@ jobs:
       run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DRELEASE_VERSION="${{ env.RELEASE_VERSION }}" -DCMAKE_CXX_COMPILER:FILEPATH=${{ matrix.CXX }}
+      working-directory: ${{github.workspace}}
+      run: cmake -B ${{env.BUILD_FOLDER}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_COMPILER:FILEPATH=${{ matrix.CXX }}
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      working-directory: ${{github.workspace}}
+      run: cmake --build ${{env.BUILD_FOLDER}} --config ${{env.BUILD_TYPE}}
     
     - name: Check 1 -> cppcheck
-      run: cmake --build ${{github.workspace}}/build --target cppcheck
-
-    # - name: Check 2 -> clang-tidy
-    #   run: clang-tidy-14 apps/* -- -I include/ -I build/generated/
+      working-directory: ${{github.workspace}}
+      run: cmake --build ${{env.BUILD_FOLDER}} --target cppcheck
 
     - name: Test
-      run: ctest --test-dir ${{github.workspace}}/build -C ${{env.BUILD_TYPE}}
+      working-directory: ${{github.workspace}}
+      run: ctest --test-dir ${{env.BUILD_FOLDER}} -C ${{env.BUILD_TYPE}}
       
     - name: Coverage
       run: gcovr -r ../ .
 
     - name: Memcheck
-      run: cd ${{github.workspace}}/build && ctest -E ".py" --overwrite MemoryCheckCommandOptions="--leak-check=full --error-exitcode=100" -T memcheck
+      working-directory: ${{github.workspace}}
+      run: cd ${{env.BUILD_FOLDER}} && ctest -E ".py" --overwrite MemoryCheckCommandOptions="--leak-check=full --error-exitcode=100" -T memcheck
 
-    - name: Create tarball
+    - name: Create package
       if: startsWith(github.event.ref, 'refs/tags/') &&  matrix.CXX == '/usr/local/bin/g++'
-      run: |
-        cd ${{github.workspace}}/build 
-        tar czf /tmp/lp.tar.gz lp
+      working-directory: ${{github.workspace}}/${{env.BUILD_FOLDER}}
+      run: cpack -G "TGZ;DEB" -D CPACK_PACKAGE_DIRECTORY=/tmp
 
     - name: Publish the release
       if: startsWith(github.event.ref, 'refs/tags/') &&  matrix.CXX == '/usr/local/bin/g++'
       uses: softprops/action-gh-release@v1
       with:
-        files: /tmp/lp.tar.gz
+        files: |
+          /tmp/lp-${{ env.RELEASE_VERSION }}-Linux.deb
+          /tmp/lp-${{ env.RELEASE_VERSION }}-Linux.deb.sha256
+          /tmp/lp-${{ env.RELEASE_VERSION }}-Linux.tar.gz
+          /tmp/lp-${{ env.RELEASE_VERSION }}-Linux.tar.gz.sha256

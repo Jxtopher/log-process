@@ -15,7 +15,7 @@
 #include <set>
 #include <string>
 
-#include "version.h"
+#include "version.hpp"
 
 const std::basic_string<char> TERM_COLOR_CLEAR_LINE{"\33[2K"};
 const std::basic_string<char> TERM_COLOR_NO_COLOR{"\033[0m"};
@@ -63,7 +63,7 @@ Args args_parser(int argc, char** argv) {
         "**" + std::string(NAME_SOFTWARE) + "**" + " options");
     parser.add_options()("help,h", "help message")("version,v", "version")(
         "flow,f", "continuously displays new processes")(
-        "color,c", "continuously displays new processes")(
+        "color,c", "color the output")(
         "seconde,s", boost::program_options::value<double>(&ret_args.seconde),
         "waiting time between two analysis of the running processes (default : "
         "\"0.01\")");

@@ -1,9 +1,15 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.25)
 
 ###############################################################################
 # Set of compilator parameters
 ###############################################################################
-project(lp)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+include(version) # Version name generator form git branch, hash
+
+project(lp
+    VERSION ${PROJECT_VERSION}
+    LANGUAGES CXX
+)
 if (CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -35,6 +41,24 @@ endif()
 set(CMAKE_CXX_FLAGS_DEBUG "-g3 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
+
+# ##############################################################################
+# Releasing: creation of the packaging with Cpack
+# ##############################################################################
+set(CPACK_GENERATOR ${_fmt})
+set(CPACK_SOURCE_GENERATOR ${_fmt})
+set(CPACK_VERBATIM_VARIABLES YES)
+set(CPACK_PACKAGE_CHECKSUM SHA256)
+set(CPACK_SET_DESTDIR TRUE)
+set(CPACK_PACKAGE_RELOCATABLE ON)
+set(CPACK_PACKAGE_CONTACT "39927513+Jxtopher@users.noreply.github.com")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jxtopher")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-program-options-dev")
+
+set(CPACK_DEB_COMPONENT_INSTALL YES)
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
+
 ###############################################################################
 # Show variables defintion
 ###############################################################################
@@ -46,11 +70,10 @@ message(STATUS "COV_FLAGS=${COV_FLAGS}")
 ###############################################################################
 # Load modules cmake
 ###############################################################################
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+include(CPack)
 include(CTest)
 include(cppcheck)       # apply cppcheck
 include(clang-format)   # apply clang-format
-include(version)        # Version name generator form git branch, hash
 
 ###############################################################################
 # Get external libs
@@ -70,6 +93,10 @@ foreach(PATH_FILE  ${LIST_OF_FILES})
         ${Boost_INCLUDE_DIRS}
     )
     target_link_libraries(${PROJECT_NAME} PRIVATE ${Boost_LIBRARIES})
+    install(TARGETS ${PROJECT_NAME} ${LIBPROJECT}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+    )
     set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${FLAGS})
 endforeach()
 
