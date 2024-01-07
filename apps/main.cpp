@@ -1,7 +1,5 @@
 // Logs Process
 
-#include <unistd.h>
-
 #include <array>
 #include <boost/program_options.hpp>
 #include <chrono>
@@ -14,6 +12,7 @@
 #include <regex>
 #include <set>
 #include <string>
+#include <unistd.h>
 
 #include "version.hpp"
 
@@ -100,8 +99,8 @@ Args args_parser(int argc, char** argv) {
 
 void get_pids(std::set<uint64_t>& pids) {
     std::regex str_expr("/proc/[0-9]+");
-
     std::string path = "/proc";
+
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
         if (std::regex_match(entry.path().c_str(), str_expr)) {
             pids.insert(std::stoull(entry.path().filename()));
@@ -115,10 +114,8 @@ void get_cmdline(uint64_t pid, std::string& cmdline) {
     getline(procFile, cmdline);
     procFile.close();
 
-    for (uint64_t i = 0; i < cmdline.size(); i++) {
-        if (cmdline[i] == 0) {
-            cmdline[i] = ' ';
-        }
+    for (std::string::iterator it = cmdline.begin(); it != cmdline.end() ; ++it) {
+        if (*it == 0) *it = ' ';
     }
 };
 
