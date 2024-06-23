@@ -1,4 +1,4 @@
-FROM gcc:13.2.0
+FROM gcc:14.1.0
 
 ARG DEBIAN_FRONTEND=noninteractive
 
