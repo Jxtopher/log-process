@@ -22,7 +22,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: gcc:14.1.0
+    container: gcc:14.2.0
 
     strategy:
       matrix:
