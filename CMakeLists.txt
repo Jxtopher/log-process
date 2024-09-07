@@ -57,7 +57,7 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jxtopher")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-program-options-dev")
 
 set(CPACK_DEB_COMPONENT_INSTALL YES)
-set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
 set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
 
 ###############################################################################
