@@ -22,11 +22,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: gcc:14.2.0
+    container: buildpack-deps:bookworm
 
     strategy:
       matrix:
-        CXX: [/usr/local/bin/g++, /usr/bin/clang++-14]
+        CXX: [/usr/bin/g++, /usr/bin/clang++-14]
 
     steps:
     - uses: actions/checkout@v4
@@ -66,12 +66,12 @@ jobs:
       run: cd ${{env.BUILD_FOLDER}} && ctest -E ".py" --overwrite MemoryCheckCommandOptions="--leak-check=full --error-exitcode=100" -T memcheck
 
     - name: Create package
-      if: startsWith(github.event.ref, 'refs/tags/') &&  matrix.CXX == '/usr/local/bin/g++'
+      if: startsWith(github.event.ref, 'refs/tags/') &&  matrix.CXX == '/usr/bin/g++'
       working-directory: ${{github.workspace}}/${{env.BUILD_FOLDER}}
       run: cpack -G "TGZ;DEB" -D CPACK_PACKAGE_DIRECTORY=/tmp
 
     - name: Publish the release
-      if: startsWith(github.event.ref, 'refs/tags/') &&  matrix.CXX == '/usr/local/bin/g++'
+      if: startsWith(github.event.ref, 'refs/tags/') &&  matrix.CXX == '/usr/bin/g++'
       uses: softprops/action-gh-release@v1
       with:
         files: |

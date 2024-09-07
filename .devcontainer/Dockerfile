@@ -1,4 +1,4 @@
-FROM gcc:14.2.0
+FROM buildpack-deps:bookworm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
