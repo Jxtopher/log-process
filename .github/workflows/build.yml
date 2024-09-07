@@ -22,11 +22,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: gcc:14.2.0
+    container: buildpack-deps:bookworm
 
     strategy:
       matrix:
-        CXX: [/usr/local/bin/g++, /usr/bin/clang++-14]
+        CXX: [/usr/bin/g++, /usr/bin/clang++-14]
 
     steps:
     - uses: actions/checkout@v4
